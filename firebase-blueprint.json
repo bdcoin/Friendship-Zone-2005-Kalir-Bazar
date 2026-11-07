@@ -1,0 +1,70 @@
+{
+  "entities": {
+    "Member": {
+      "title": "Member",
+      "description": "Registered member profile of Friendship Zone (2005), Kalir Bazar",
+      "type": "object",
+      "properties": {
+        "memberId": { "type": "string", "description": "Unique Member ID e.g. FZ-101" },
+        "name": { "type": "string", "description": "Full name of member" },
+        "mobileNumber": { "type": "string", "description": "Contact phone number" },
+        "address": { "type": "string", "description": "Residential address" },
+        "nidNumber": { "type": "string", "description": "National Identity Number" },
+        "nomineeName": { "type": "string", "description": "Name of nominee" },
+        "nomineeAddress": { "type": "string", "description": "Address of nominee" },
+        "nomineeNidNumber": { "type": "string", "description": "NID number of nominee" },
+        "loginPin": { "type": "string", "description": "4-digit login PIN" },
+        "status": { "type": "string", "description": "Membership status (ACTIVE / INACTIVE)" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["memberId", "name", "mobileNumber", "loginPin", "status", "createdAt"]
+    },
+    "Transaction": {
+      "title": "Transaction",
+      "description": "Financial deposit or withdrawal record for a member",
+      "type": "object",
+      "properties": {
+        "memberId": { "type": "string", "description": "Associated Member ID e.g. FZ-101" },
+        "amount": { "type": "number", "description": "Transaction amount in BDT" },
+        "type": { "type": "string", "description": "Deposit type: MONTHLY_DEPOSIT, SPECIAL_DEPOSIT, SHARE_CAPITAL, WELFARE_FUND, WITHDRAWAL" },
+        "month": { "type": "string", "description": "Month name e.g. November" },
+        "year": { "type": "integer", "description": "Year e.g. 2026" },
+        "date": { "type": "string", "description": "Date format YYYY-MM-DD" },
+        "receiptNumber": { "type": "string", "description": "Voucher or receipt number" },
+        "paymentMethod": { "type": "string", "description": "Payment mode e.g. Cash, bKash, Bank" },
+        "remarks": { "type": "string", "description": "Optional notes or remarks" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["memberId", "amount", "type", "month", "year", "date", "createdAt"]
+    },
+    "SocietyConfig": {
+      "title": "SocietyConfig",
+      "description": "Overall society administrative configuration and credentials",
+      "type": "object",
+      "properties": {
+        "adminPin": { "type": "string", "description": "Master admin security PIN" },
+        "societyName": { "type": "string", "description": "Name of the society" },
+        "location": { "type": "string", "description": "Location e.g. Kalir Bazar" },
+        "establishedYear": { "type": "string", "description": "Foundation year e.g. 2005" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["adminPin", "societyName", "location"]
+    }
+  },
+  "firestore": {
+    "/members/{memberId}": {
+      "schema": "#/entities/Member",
+      "description": "Collection of all society members"
+    },
+    "/transactions/{transactionId}": {
+      "schema": "#/entities/Transaction",
+      "description": "Collection of all member transactions and deposits"
+    },
+    "/society_config/{configId}": {
+      "schema": "#/entities/SocietyConfig",
+      "description": "Society administrative settings"
+    }
+  }
+}

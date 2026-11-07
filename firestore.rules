@@ -1,0 +1,89 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Global default deny
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    function isAdmin() {
+      return isSignedIn() && (
+        request.auth.token.email == 'dragonboy20002@gmail.com' ||
+        exists(/databases/$(database)/documents/admins/$(request.auth.uid))
+      );
+    }
+
+    function isValidMember(data) {
+      return data.memberId is string && data.memberId.size() >= 2 && data.memberId.size() <= 30 &&
+             data.name is string && data.name.size() >= 2 && data.name.size() <= 100 &&
+             data.mobileNumber is string && data.mobileNumber.size() >= 5 && data.mobileNumber.size() <= 20 &&
+             (!('address' in data) || (data.address is string && data.address.size() <= 200)) &&
+             (!('nidNumber' in data) || (data.nidNumber is string && data.nidNumber.size() <= 50)) &&
+             (!('nomineeName' in data) || (data.nomineeName is string && data.nomineeName.size() <= 100)) &&
+             (!('nomineeAddress' in data) || (data.nomineeAddress is string && data.nomineeAddress.size() <= 200)) &&
+             (!('nomineeNidNumber' in data) || (data.nomineeNidNumber is string && data.nomineeNidNumber.size() <= 50)) &&
+             data.loginPin is string && data.loginPin.size() >= 4 && data.loginPin.size() <= 10 &&
+             data.status in ['ACTIVE', 'INACTIVE'] &&
+             data.createdAt is timestamp;
+    }
+
+    function isValidTransaction(data) {
+      return data.memberId is string && data.memberId.size() >= 2 && data.memberId.size() <= 30 &&
+             data.amount is number && data.amount > 0 &&
+             data.type in ['MONTHLY_DEPOSIT', 'SPECIAL_DEPOSIT', 'SHARE_CAPITAL', 'WELFARE_FUND', 'WITHDRAWAL'] &&
+             data.month is string && data.month.size() >= 3 && data.month.size() <= 20 &&
+             data.year is int && data.year >= 2000 && data.year <= 2100 &&
+             data.date is string && data.date.size() >= 8 && data.date.size() <= 12 &&
+             (!('receiptNumber' in data) || (data.receiptNumber is string && data.receiptNumber.size() <= 50)) &&
+             (!('paymentMethod' in data) || (data.paymentMethod is string && data.paymentMethod.size() <= 50)) &&
+             (!('remarks' in data) || (data.remarks is string && data.remarks.size() <= 300)) &&
+             data.createdAt is timestamp;
+    }
+
+    function isValidSocietyConfig(data) {
+      return data.adminPin is string && data.adminPin.size() >= 4 && data.adminPin.size() <= 10 &&
+             data.societyName is string && data.societyName.size() >= 2 && data.societyName.size() <= 100 &&
+             data.location is string && data.location.size() >= 2 && data.location.size() <= 100;
+    }
+
+    match /members/{memberId} {
+      allow get, list: if isSignedIn();
+      allow create: if isSignedIn() && (isAdmin() || true) && isValidMember(incoming());
+      allow update: if isSignedIn() && isValidMember(incoming()) && (
+        isAdmin() ||
+        incoming().diff(existing()).affectedKeys().hasOnly(['loginPin', 'updatedAt'])
+      );
+      allow delete: if isSignedIn() && (isAdmin() || true);
+    }
+
+    match /transactions/{transactionId} {
+      allow get, list: if isSignedIn();
+      allow create: if isSignedIn() && isValidTransaction(incoming());
+      allow update: if isSignedIn() && isValidTransaction(incoming());
+      allow delete: if isSignedIn();
+    }
+
+    match /society_config/{configId} {
+      allow get, list: if isSignedIn();
+      allow create, update: if isSignedIn() && isValidSocietyConfig(incoming());
+      allow delete: if isSignedIn() && isAdmin();
+    }
+
+    match /admins/{adminId} {
+      allow read: if isSignedIn();
+      allow write: if isSignedIn() && isAdmin();
+    }
+  }
+}

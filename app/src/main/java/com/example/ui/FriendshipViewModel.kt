@@ -44,6 +44,7 @@ class FriendshipViewModel(application: Application) : AndroidViewModel(applicati
   init {
     val db = AppDatabase.getInstance(application)
     repository = FriendshipRepository(
+      context = application.applicationContext,
       memberDao = db.memberDao(),
       transactionDao = db.transactionDao(),
       adminConfigDao = db.adminConfigDao()
