@@ -1,0 +1,6 @@
+{
+  "name": "Friendship Zone",
+  "description": "Financial and member management app for Friendship Zone (2005), Kalir Bazar with member accounts, deposit tracking, monthly history, and admin controls.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
